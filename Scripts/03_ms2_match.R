@@ -30,10 +30,10 @@ maxTic <- function(x, ...) {
 }
 # make a subfolder for ms2 match with library name
 make_dir <- function(db) {
-  # Get the name of the input object as character
+  # Get the name of the database
   sub_dir <- deparse(substitute(db))
   
-  # Create the full path using here::here()
+  # Create the full path
   dir_path <- here::here("output", sub_dir)
   
   # Check if directory exists, if not create it
@@ -44,7 +44,7 @@ make_dir <- function(db) {
     message("Directory already exists: ", dir_path)
   }
   
-  # Return the path invisibly
+  # Return the path
   invisible(dir_path)
 }
 
