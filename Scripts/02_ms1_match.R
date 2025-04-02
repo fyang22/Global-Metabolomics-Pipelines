@@ -1,16 +1,4 @@
-#################### Read mzml data fuction #################### 
-read_mzml <- function(file_path){
-  list_of_files <- list.files(path = file_path,
-                              recursive = TRUE,
-                              pattern = "\\.mzML$",
-                              full.names = TRUE)
-  sps <- Spectra(list_of_files)
-  sps <- filterMsLevel(sps, msLevel = 2L)
-  sps <- filterRt(sps, c(60,1200))
-  return(sps)
-}
-
-##################### MS1 match #################### 
+##################### fuction for MS1 match #################### 
 MS1_match <- function(df_features, df_db,db_param){
     MS1_match <- matchValues(df_features, 
                          df_db, 
@@ -33,28 +21,8 @@ adduct <- "[M+H]+" # positive mode
 db_param <- Mass2MzParam(adducts = adduct,
                      tolerance = 0.001, ppm = 5)
 # xcms features
-bacteria_features <- read.csv(here("data","xcms","XCMS_full_bacteria.csv"))
+XCMS_features <- read.csv(here("data","xcms","XCMS_full.csv"))
 # hmdb database
 hmdb <- read.csv(here("data","hmdb_cleanup_v02062023.csv"))
 # ms1 level matche xcms features with hmdb
-bacteria_ms1_matched <- MS1_match(bacteria_features,hmdb,db_param)
-
-# read raw files and filter features with ms2
-sps_all <- read_mzml(here("data","raw"))
-sps_all_df <- spectraData(sps_all, c("msLevel","rtime","dataOrigin","precursorMz","scanIndex"))
-
-df_features <- read.csv(here("output","ms1mtch_hmdb_bacteria_features.csv"))
-
-features_param <- MzRtParam(ppm = 25, toleranceRt = 40)
-
-matched_features <- matchMz(sps_all_df, 
-                            df_features, param = features_param,
-                            mzColname = c("precursorMz", "mzmed"),
-                            rtColname = c("rtime","rtmed"))
-features_match <- matchedData(matched_features)[whichQuery(matched_features),]
-features_match <- features_match[!is.na(features_match$score),]
-features_match <- features_match[order(features_match$ppm_error,decreasing = FALSE),]
-features_match <-features_match[!duplicated(features_match$target_name),]
-write.csv(features_match , here("output","feature_hasMS2.csv"))
-
-features_match <- read.csv(here("output","feature_hasMS2.csv"))
+XCMS_ms1_matched <- MS1_match(XCMS_features,hmdb,db_param)

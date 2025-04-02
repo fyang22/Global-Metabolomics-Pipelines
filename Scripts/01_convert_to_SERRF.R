@@ -1,5 +1,5 @@
 # Serrf XCMS converts to SERRF
-XCMS_output<- read.csv(here("data","xcms","XCMS_full.csv"), header = T, sep = ",", dec = ".", check.names = FALSE)
+XCMS_output<- read.csv(here("data","xcms_SERRF","XCMS_full.csv"), header = T, sep = ",", dec = ".", check.names = FALSE)
 
 names(XCMS_output)[names(XCMS_output) == "name"] <- "label"
 
@@ -22,7 +22,7 @@ df_filtered <- df_filtered %>%
   filter(RSD < 0.3)
 
 
-write.csv(df_filtered,here("data","xcms","filtered_output_file.csv"),row.names = FALSE)
+write.csv(df_filtered,here("output","xcms_SERRF","filtered_output_file.csv"),row.names = FALSE)
 
 df_xcms <- df_filtered %>%
   select(-matches("RSD"))
@@ -40,4 +40,4 @@ timeRow <- c("time", 1:(ncol(df_xcms) - 1))
 df_SERRF <- rbind(batch_row, sampleTypes, timeRow, df_xcms)
 
 # Save to CSV
-write.csv(df_SERRF, here("data","xcms","SERRF_input.csv"), row.names = FALSE)
+write.csv(df_SERRF, here("output","xcms_SERRF","SERRF_input.csv"), row.names = FALSE)

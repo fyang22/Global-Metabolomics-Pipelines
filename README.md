@@ -24,15 +24,20 @@ This project is to build a pipeline to process data after xcms preprocessing, th
    ```
 
 ## data
+### add raw mzml data and feature tables
 - raw: "data/raw/" mzML files
 - xcms: "data/xcms/" 
-  - input: xcms output file "XCMS_full.csv"
-  - output: converted xcms file for SERRF normalization "SERRF_input.csv"
-  - input: SERRF normalized file "normalized by - SERRF.csv"
-  - output: updata xcms features with SERRF noramlization "XCMS_full_normalized.csv"; "XCMS_full_normalized_noQC.csv"
+  - xcms output file "XCMS_full.csv"  
+  - SERRF normalized file "normalized by - SERRF.csv"
 - HMDB database: "data/hmdb_cleanup_v02062023.csv"
 
 ## Output
+
+### XCMS feature clean up data
+- Tables: "output/xcms_SERRF/
+  - converted xcms file for SERRF normalization "SERRF_input.csv"
+  - updata xcms features with SERRF noramlization "XCMS_full_normalized.csv"; "XCMS_full_normalized_noQC.csv"
+### MS output data
 - Tables: "output/"
   - MS matches with HMDB: "ms1mtch_hmdb_features.csv"
   - Features have msLevel 2 in spectra: "feature_hasMS2.csv"

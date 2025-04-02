@@ -2,6 +2,13 @@
 ### Load or install packages ##################
 ###############################################
 
+# Read session_info.txt (if saved)
+session_text <- readLines("session_info.txt")
+
+# Extract package names (regex for "package_name_version")
+pkgs <- gsub(".*([a-zA-Z0-9]+)_[0-9.]+.*", "\\1", session_text)
+pkgs <- unique(pkgs[!grepl("R|locale|attached base", pkgs)])
+
 if (!require("here")) install.packages("here")
 library(here)
 
@@ -40,6 +47,16 @@ if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocMana
 if (!require("AnnotationHub")) BiocManager::install("AnnotationHub")
 library(AnnotationHub)
 ah <- AnnotationHub()
+
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+if (!require("Spectra")) BiocManager::install("Spectra")
+library(Spectra)
+
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+if (!require("BiocParallel")) BiocManager::install(("BiocParallel"),force = TRUE)
+library(BiocParallel)
+
+
 
 # Set working directory to repo root
 setwd(here())
