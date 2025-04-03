@@ -26,7 +26,7 @@ This project is to build a pipeline to process data after xcms preprocessing, th
 ## data
 ### add raw mzml data and feature tables
 - raw: "data/raw/" mzML files
-- xcms: "data/xcms/" 
+- xcms: "data/xcms_SERRF/" 
   - xcms output file "XCMS_full.csv"  
   - SERRF normalized file "normalized by - SERRF.csv"
 - HMDB database: "data/hmdb_cleanup_v02062023.csv"
