@@ -41,6 +41,7 @@ This project is to build a pipeline to process data after xcms preprocessing, th
 - Tables: "output/"
   - MS matches with HMDB: "ms1mtch_hmdb_features.csv"
   - Features have msLevel 2 in spectra: "feature_hasMS2.csv"
+  - combine features for MetaboAnalyst: "MetaboAnalyst_features.csv"
 - MS/MS matched results: "output/db/"
   - MS2 matches with database: "ms2mtch_FeatureName.csv"
 

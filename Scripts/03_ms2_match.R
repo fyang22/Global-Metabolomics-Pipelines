@@ -104,7 +104,7 @@ write.csv(features_match , here("output","feature_hasMS2.csv"))
 ###############################################
 # threashold for MS2 matching scores
 # mz search tolerance
-parm_ms2 <- MatchForwardReverseParam(ppm = 20, requirePrecursor =FALSE,
+parm_ms2 <- MatchForwardReverseParam(ppm = 20, requirePrecursor =TRUE,
                                      THRESHFUN = function(x) which(x >= 0.6)
                                      #THRESHFUN = select_top_match
 )

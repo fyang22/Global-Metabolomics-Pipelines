@@ -19,7 +19,7 @@ rsd <- std_qc / mean_qc
 df_filtered <- XCMS_output_filter %>%
   mutate(RSD = rsd)
 df_filtered <- df_filtered %>%
-  filter(RSD < 0.3)
+  filter(RSD <= 0.3)
 
 
 write.csv(df_filtered,here("output","xcms_SERRF","filtered_output_file.csv"),row.names = FALSE)
@@ -39,5 +39,5 @@ timeRow <- c("time", 1:(ncol(df_xcms) - 1))
 # Insert the rows above the first row
 df_SERRF <- rbind(batch_row, sampleTypes, timeRow, df_xcms)
 
-# Save to CSV
+# Save SERRF input to CSV
 write.csv(df_SERRF, here("output","xcms_SERRF","SERRF_input.csv"), row.names = FALSE)

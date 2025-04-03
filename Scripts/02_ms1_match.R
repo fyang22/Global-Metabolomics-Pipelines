@@ -20,9 +20,23 @@ MS1_match <- function(df_features, df_db,db_param){
 adduct <- "[M+H]+" # positive mode
 db_param <- Mass2MzParam(adducts = adduct,
                      tolerance = 0.001, ppm = 5)
-# xcms features
-XCMS_features <- read.csv(here("data","xcms","XCMS_full.csv"))
+# normalized xcms features
+XCMS_features <- read.csv(here("output","xcms_SERRF","XCMS_full_normalized.csv"))
 # hmdb database
 hmdb <- read.csv(here("data","hmdb_cleanup_v02062023.csv"))
 # ms1 level matche xcms features with hmdb
 XCMS_ms1_matched <- MS1_match(XCMS_features,hmdb,db_param)
+
+# Subset ms1 match features with XCMS for MetaboAnalyst
+df_MetaboAnalyst <- XCMS_features %>% 
+  filter(name %in% XCMS_ms1_matched$name) %>%
+  select(-any_of(c("max_sample", "mzmed", "rtmed"))) %>%
+
+colnames(df_MetaboAnalyst)[colnames(df_MetaboAnalyst) == "name"] <- "sample"  
+# save features for metaboanalyst with qcs
+write.csv(df_MetaboAnalyst, here("output","MetaboAnalyst_features.csv"))
+
+# save features for metaboanalyst without qcs
+df_MetaboAnalyst_noQC <- df_MetaboAnalyst %>% 
+  select(-matches("QC", ignore.case = TRUE))
+write.csv(df_MetaboAnalyst_noQC, here("output","MetaboAnalyst_features_noQC.csv"))
