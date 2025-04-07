@@ -1,4 +1,4 @@
-##################### fuction for MS1 match #################### 
+# ---- 02. m/z match with HMDB ----
 MS1_match <- function(df_features, df_db,db_param){
     MS1_match <- matchValues(df_features, 
                          df_db, 
@@ -16,27 +16,45 @@ MS1_match <- function(df_features, df_db,db_param){
 
 }
 
-
 adduct <- "[M+H]+" # positive mode
 db_param <- Mass2MzParam(adducts = adduct,
                      tolerance = 0.001, ppm = 5)
 # normalized xcms features
-XCMS_features <- read.csv(here("output","xcms_SERRF","XCMS_full_normalized.csv"))
+XCMS <- read.csv(here("output","xcms_SERRF","XCMS_full_normalized.csv"))
 # hmdb database
 hmdb <- read.csv(here("data","hmdb_cleanup_v02062023.csv"))
 # ms1 level matche xcms features with hmdb
-XCMS_ms1_matched <- MS1_match(XCMS_features,hmdb,db_param)
+XCMS_ms1_matched <- MS1_match(XCMS,hmdb,db_param)
 
+# ---- generate metaboanalyst table  ----
 # Subset ms1 match features with XCMS for MetaboAnalyst
-df_MetaboAnalyst <- XCMS_features %>% 
+df_MetaboAnalyst <- XCMS %>% 
   filter(name %in% XCMS_ms1_matched$name) %>%
   select(-any_of(c("max_sample", "mzmed", "rtmed"))) %>%
+  rename(sample = name)
 
-colnames(df_MetaboAnalyst)[colnames(df_MetaboAnalyst) == "name"] <- "sample"  
+# ---- without label  ----
 # save features for metaboanalyst with qcs
-write.csv(df_MetaboAnalyst, here("output","MetaboAnalyst_features.csv"))
+write.csv(df_MetaboAnalyst, here("output","Metaboanalyst_input","MetaboAnalyst_features.csv"))
 
 # save features for metaboanalyst without qcs
 df_MetaboAnalyst_noQC <- df_MetaboAnalyst %>% 
   select(-matches("QC", ignore.case = TRUE))
-write.csv(df_MetaboAnalyst_noQC, here("output","MetaboAnalyst_features_noQC.csv"))
+write.csv(df_MetaboAnalyst_noQC, here("output","Metaboanalyst_input","MetaboAnalyst_features_noQC.csv"))
+
+# ---- with label  ----
+# samples names : QC0-9, group.subgroup.sampleid_0-9_
+groups <- setdiff(colnames(df_MetaboAnalyst), "sample")
+sample_groups <- ifelse(
+  grepl("^QC", groups),
+  "QC",
+  sub("^([A-Za-z]+\\.[A-Za-z0-9]+).*", "\\1", groups)
+)
+sample_row <- data.frame(t(c("label", sample_groups)), stringsAsFactors = FALSE)
+colnames(sample_row) <- colnames(df_MetaboAnalyst)
+df_MetaboAnalyst_full <- rbind(sample_row, df_MetaboAnalyst)
+write.csv(df_MetaboAnalyst_full, here("output","Metaboanalyst_input","MetaboAnalyst_withLabel.csv"))
+
+df_MetaboAnalyst_full_noQC <- df_MetaboAnalyst_full %>% 
+  select(-matches("QC", ignore.case = TRUE))
+write.csv(df_MetaboAnalyst_full_noQC, here("output","Metaboanalyst_input","MetaboAnalyst_withLabel_noQC.csv"))

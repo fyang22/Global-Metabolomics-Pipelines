@@ -1,4 +1,4 @@
-# Serrf XCMS converts to SERRF
+# ---- 01. convert xcms output to serrf format  ----
 XCMS_output<- read.csv(here("data","xcms_SERRF","XCMS_full.csv"), header = T, sep = ",", dec = ".", check.names = FALSE)
 
 names(XCMS_output)[names(XCMS_output) == "name"] <- "label"
@@ -21,23 +21,25 @@ df_filtered <- XCMS_output_filter %>%
 df_filtered <- df_filtered %>%
   filter(RSD <= 0.3)
 
-
-write.csv(df_filtered,here("output","xcms_SERRF","filtered_output_file.csv"),row.names = FALSE)
+#write.csv(df_filtered,here("output","xcms_SERRF","filtered_output_file.csv"),row.names = FALSE)
 
 df_xcms <- df_filtered %>%
   select(-matches("RSD"))
 
-col_numbers <- as.numeric(sub(".*_(\\d+)$", "\\1", colnames(df_xcms), perl = TRUE))
+# Order columns numerically based on suffix
+data_cols <- setdiff(colnames(df_xcms), "label")
+suffix_matches <- regmatches(data_cols, regexpr("_(\\d+)$", data_cols, perl = TRUE))
+col_numbers <- as.numeric(gsub("_", "", suffix_matches))
 col_numbers[is.na(col_numbers)] <- 0
-df_xcms <- df_xcms[, order(col_numbers)]
+
+# Create SERRF header rows
 batch_row <- c("batch", rep("A", ncol(df_xcms) - 1))
 sampleTypes <- ifelse(grepl("^QC", colnames(df_xcms)), "qc", "sample")
 sampleTypes <- replace(sampleTypes, 1, "sampleType")
-# Create the "time" row with a sequence from 1 to the last column number
 timeRow <- c("time", 1:(ncol(df_xcms) - 1))
 
-# Insert the rows above the first row
+# Bind rows to create SERRF input
 df_SERRF <- rbind(batch_row, sampleTypes, timeRow, df_xcms)
 
-# Save SERRF input to CSV
-write.csv(df_SERRF, here("output","xcms_SERRF","SERRF_input.csv"), row.names = FALSE)
+# Write final SERRF input to CSV
+write.csv(df_SERRF, here("output", "xcms_SERRF", "SERRF_input.csv"), row.names = FALSE)
