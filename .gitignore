@@ -49,9 +49,7 @@ po/*~
 rsconnect/
 
 # data
-data/raw
-data/xcms_SERRF
-data/hmdb_cleanup_v02062023.csv
+data/
 
 #output
 output/

@@ -51,16 +51,16 @@ make_dir <- function(db) {
 # fuction for ms2 match
 msms_match <- function(db,sps,df_match, polarity,parm_ms2) { 
     # noramlize db and sps
+    sub_dir <- deparse(substitute(db))
     db <- filterPolarity(db,polarity = polarity)
     db <- addProcessing(db,norm_int)
-    print(db)
+    
     sps_normalized <- addProcessing(sps, norm_int)
-    sps_normalized <- filterIntensity(sps_normalized,intensity = low_int)
-    print(sps_normalized)
+    sps_normalized <- filterIntensity(sps_normalized,intensity = low_int) 
     for (i in seq_len(nrow(df_match))){
-        mz <- df_match$target_mzmed[i]
-        id <- df_match$target_name[i]
-        rt <- df_match$target_rtmed[i]
+        mz <- df_match$mzmed[i]
+        id <- df_match$name[i]
+        rt <- df_match$rtmed[i]
         sps_ms <- filterValues(sps_normalized,
         spectraVariables = c("precursorMz","rtime"),
         values = c(mz,rt), 
@@ -68,48 +68,34 @@ msms_match <- function(db,sps,df_match, polarity,parm_ms2) {
         ppm = c(10,0), 
         match = "all")
         sps_agg <- combineSpectra(sps_ms, FUN = maxTic, minProp = 5)
-          if (length(sps_agg)>2){
+        if (length(sps_agg)>1){
             mtch <- matchSpectra(sps_agg, db, parm_ms2)
             mtch_sub <- mtch[whichQuery(mtch)]
             df_mtch_sub <- apply(spectraData(mtch_sub),2,as.character)
             if(length(df_mtch_sub) == 0){
-                message("No hit with mz = ", mz)
-             }
-            else{write.csv(df_mtch_sub,here("output", sub_dir, paste0("ms2mtch_", id, ".csv")))
-            }
+                message("No hit with feature = ", id)}
+            else{write.csv(df_mtch_sub,here("output", sub_dir, paste0("ms2mtch_", id, ".csv")))}
         }     
     }
 }
 
 # read raw files and filter features with ms2
 sps_all <- read_mzml(here("data","raw"))
-sps_all_df <- spectraData(sps_all, c("msLevel","rtime","dataOrigin","precursorMz","scanIndex"))
+sps_all_df <- spectraData(sps_all, c("rtime","dataOrigin","precursorMz"))
 
-df_features <- read.csv(here("output","ms1mtch_hmdb_features.csv"))
-
-features_param <- MzRtParam(ppm = 25, toleranceRt = 40)
-
-matched_features <- matchMz(sps_all_df, 
-                            df_features, param = features_param,
-                            mzColname = c("precursorMz", "mzmed"),
-                            rtColname = c("rtime","rtmed"))
-features_match <- matchedData(matched_features)[whichQuery(matched_features),]
-features_match <- features_match[!is.na(features_match$score),]
-features_match <- features_match[order(features_match$ppm_error,decreasing = FALSE),]
-features_match <-features_match[!duplicated(features_match$target_name),]
-write.csv(features_match , here("output","feature_hasMS2.csv"))
+df_features <- read.csv(here("output","ms1mtch_hmdb_XCMS.csv"))
 
 ###############################################
 ######### Parameter settings for MS2 ##########
 ###############################################
 # threashold for MS2 matching scores
 # mz search tolerance
-parm_ms2 <- MatchForwardReverseParam(ppm = 20, requirePrecursor =TRUE,
+parm_ms2 <- MatchForwardReverseParam(ppm = 10, requirePrecursor =TRUE,
                                      THRESHFUN = function(x) which(x >= 0.6)
                                      #THRESHFUN = select_top_match
 )
 
-features_match <- read.csv(here("output","feature_hasMS2.csv"))
+#features_match <- read.csv(here("output","feature_hasMS2.csv"))
 
 library(AnnotationHub)
 ah <- AnnotationHub()
@@ -120,16 +106,22 @@ mbank <- ah[["AH119519"]] |>
 # creat a subfolder
 make_dic <- make_dir(mbank)
 # match with mbank
-msms_features_match <- msms_match(mbank, sps_all,features_match,polarity = 1 ,parm_ms2)
+msms_features_match <- msms_match(mbank, sps_all,df_features,polarity = 0 ,parm_ms2)
 
 
 # creat a subfolder for inhouse lib
-make_dic <- make_dir(mylib)
+#make_dic <- make_dir(mylib)
 # match with mylib
-msms_features_match <- msms_match(mylib, sps_all,features_match,polarity = 1 ,parm_ms2)
+#msms_features_match <- msms_match(mylib, sps_all,features_match,polarity = 1 ,parm_ms2)
 
 #sps_agg <- combineSpectra(sps_ms, peaks = "intersect", minProp = 1)
 #print(sps_agg)
 
 #sps_agg_max <- combineSpectra(sps_ms, FUN = maxTic)
 
+# make a list of ms2 match results
+feature_mtch_ms2 <- list.files(path = here("output","mbank"),
+                              recursive = TRUE,
+                              pattern = "\\.csv$",
+                              full.names = FALSE)
+write.csv(feature_mtch_ms2,here("output","list_features_ms2.csv"))

@@ -3,8 +3,8 @@ MS1_match <- function(df_features, df_db,db_param){
     MS1_match <- matchValues(df_features, 
                          df_db, 
                          db_param, mzColname= "mzmed")
-    MS1_matched <- matchedData(MS1_match)[whichQuery(MS1_match),]
-    MS1_matched <- MS1_matched[!is.na(MS1_matched$score),]
+    MS1_matched <- matchedData(MS1_match)#[whichQuery(MS1_match),]
+    MS1_matched <- MS1_matched[!is.na(MS1_matched$ppm_error),]
     MS1_matched <- MS1_matched[order(MS1_matched$ppm_error,decreasing = FALSE),]
     MS1_matched <- MS1_matched[!duplicated(MS1_matched$name),]
     MS1_matched$ID <- seq.int(nrow(MS1_matched))
@@ -16,23 +16,24 @@ MS1_match <- function(df_features, df_db,db_param){
 
 }
 
-adduct <- "[M+H]+" # positive mode
+adduct <- "[M-H]-" # positive mode
 db_param <- Mass2MzParam(adducts = adduct,
                      tolerance = 0.001, ppm = 5)
 # normalized xcms features
 XCMS <- read.csv(here("output","xcms_SERRF","XCMS_full_normalized.csv"))
+#names(XCMS)[names(XCMS) == "name"] <- "sample"
+
 # hmdb database
 hmdb <- read.csv(here("data","hmdb_cleanup_v02062023.csv"))
 # ms1 level matche xcms features with hmdb
-XCMS_ms1_matched <- MS1_match(XCMS,hmdb,db_param)
+XCMS_ms1_matched <- MS1_match(XCMS,hmdb,db_param)   
 
 # ---- generate metaboanalyst table  ----
 # Subset ms1 match features with XCMS for MetaboAnalyst
 df_MetaboAnalyst <- XCMS %>% 
   filter(name %in% XCMS_ms1_matched$name) %>%
-  select(-any_of(c("max_sample", "mzmed", "rtmed"))) %>%
-  rename(sample = name)
-
+  select(-any_of(c("max_sample", "mzmed", "rtmed")))
+ 
 # ---- without label  ----
 # save features for metaboanalyst with qcs
 write.csv(df_MetaboAnalyst, here("output","Metaboanalyst_input","MetaboAnalyst_features.csv"))
