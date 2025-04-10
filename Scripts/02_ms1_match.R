@@ -45,7 +45,7 @@ write.csv(df_MetaboAnalyst_noQC, here("output","Metaboanalyst_input","MetaboAnal
 
 # ---- with label  ----
 # samples names : QC0-9, group.subgroup.sampleid_0-9_
-groups <- setdiff(colnames(df_MetaboAnalyst), "sample")
+groups <- setdiff(colnames(df_MetaboAnalyst), "name")
 sample_groups <- ifelse(
   grepl("^QC", groups),
   "QC",

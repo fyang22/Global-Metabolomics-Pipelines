@@ -5,14 +5,14 @@ library(dplyr)
 library(tidyverse)
 # ---- with QC ----
 # feature list
-df_MetaboAnalyst_full <- read.csv(here("output","Metaboanalyst_input","MetaboAnalyst_withLabel.csv"))
+df_MetaboAnalyst_full <- read.csv(here("output","Metaboanalyst_input","MetaboAnalyst_features.csv"))
 df_MetaboAnalyst_full <- df_MetaboAnalyst_full[-1]
 # feature name
 df_feature <- read.csv((here("output","list_features_ms2.csv")))
 #df_feature <- read.csv(here("data","Metaboanalyst","volcano.csv"))
 
 df_plot <- df_MetaboAnalyst_full %>%
-  filter(sample %in% df_feature$name) %>%                               
+  filter(name %in% df_feature$name) %>%                               
   t() %>%                                                      
   as.data.frame(stringsAsFactors = FALSE)%>%
   {colnames(.) <- as.character(unlist(.[1, ])); .[-1, ] }
